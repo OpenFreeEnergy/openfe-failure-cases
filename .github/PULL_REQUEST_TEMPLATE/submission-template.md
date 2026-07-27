@@ -3,7 +3,7 @@
 ## Failure type
 - [ ] Crash
 - [ ] NaN result
-- [ ] Large variation between repeats
+- [ ] Large variation between repeats (~5 kcal/mol or more)
 - [ ] Other:
 
 ## Notes
