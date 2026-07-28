@@ -1,2 +1,24 @@
 # openfe-failure-cases
-A collection of reproducable openfe protocol failure cases resulting in NaN results.
+
+This repository collects OpenFE simulation failure cases so we can better understand what fails, why it fails, and under what conditions. The goal is to support protocol improvements by sharing reproducible examples, diagnostics, and context around crashes, `NaN` results, and large repeat-to-repeat variation.
+
+## What counts as a failure
+
+In this repository, "failure" means a simulation that:
+- crashes
+- returns `NaN`
+- shows large variation between repeats, typically around `~5 kcal/mol` or more
+
+This does **not** mean a result is scientifically incorrect just because it differs from a reference value.
+
+## Submission
+
+To make a submission, please fork this repository and create a pull request with your case(s), and fill in the submission template. Multiple cases can be submitted in a single pull request, but please submit each case in its own folder containing the transformation JSON, logs and any other output files.
+
+## What to include
+
+Please submit cases with as much context as possible, including:
+- the OpenFE transformation JSON
+- environment details
+- hardware details
+- any diagnostics already run
