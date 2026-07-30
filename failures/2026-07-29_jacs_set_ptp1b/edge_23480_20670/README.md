@@ -1,0 +1,3 @@
+- From 5 repeats, one complex leg failed, the rest and all solvent legs completed successfully
+- This is likely due to close proximity of ligand terminal methyl group to a crystallographic water molecule
+- Maybe try out either more gentle equilibration or clash detection in the protocol.validate()
