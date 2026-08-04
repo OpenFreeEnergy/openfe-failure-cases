@@ -20,7 +20,7 @@ Add any extra context that could help reproduce or understand the failure.
 ## Attachments
 - [ ] Protocol Transformation JSON(s)
 - [ ] Logs
-- [ ] Trajectory / output files
+- [ ] For `NaN` results the `state.xml` file stored in the `nan-error-logs` folder
 - [ ] Environment YAML (conda list output)
 - [ ] Hardware details
 
