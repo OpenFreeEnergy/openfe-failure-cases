@@ -27,3 +27,4 @@ Please submit cases with as much context as possible, including:
 ## Example submission
 
 You can find an example of a failure case submission here: https://github.com/OpenFreeEnergy/openfe-failure-cases/pull/2
+test
