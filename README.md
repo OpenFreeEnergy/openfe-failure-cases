@@ -22,7 +22,7 @@ Please submit cases with as much context as possible, including:
 - environment details
 - hardware details
 - any diagnostics already run
-- For `NaNa` failures the xml file of the last state before the crash, stored in `nan_error_logs`
+- For `NaN` failures the xml file of the last state before the crash, stored in `nan_error_logs`
 
 ## Example submission
 
