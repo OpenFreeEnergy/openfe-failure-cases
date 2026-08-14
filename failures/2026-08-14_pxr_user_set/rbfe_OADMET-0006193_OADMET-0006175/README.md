@@ -1,0 +1,1 @@
+The atom mapping is empty for this transformation due to no spatial overlap, but the MST network planner returns this as an edge for the network when it probably should not.
