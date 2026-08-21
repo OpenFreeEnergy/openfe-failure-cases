@@ -27,3 +27,17 @@ Please submit cases with as much context as possible, including:
 ## Example submission
 
 You can find an example of a failure case submission here: https://github.com/OpenFreeEnergy/openfe-failure-cases/pull/2
+
+## Local analysis
+
+We provide [scripts](scripts) for local analysis of failure cases. These scripts are intended for private use and cannot be submitted to this public repository.
+
+The scripts help validate transformations and check for common issues, such as bond-breaking RBFE mappings or missing protein residues without caps.
+
+### Running a script
+
+Each script takes a transformation JSON file as input. For example:
+
+```bash
+python scripts/validate_transformation.py path/to/transformation.json
+```

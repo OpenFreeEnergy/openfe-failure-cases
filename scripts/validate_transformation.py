@@ -346,7 +346,9 @@ def main(transformation_file: str):
     print("  - mapping.svg: the atom mapping for the transformation")
     print("  - errors.log: the errors found by the script which are also printed to the terminal.")
 
-    smcs = [mapping.componentA, mapping.componentB]
+    smcs = {*transformation.stateA.get_components_of_type(SmallMoleculeComponent),
+            *transformation.stateB.get_components_of_type(SmallMoleculeComponent)}
+
     supplier = Chem.SDWriter((output_dir / "ligands.sdf").as_posix())
     for smc in smcs:
         supplier.write(smc.to_rdkit())
@@ -356,18 +358,18 @@ def main(transformation_file: str):
         pc.to_pdb_file((output_dir / "receptor.pdb").as_posix())
 
     # write out the mapping to svg for visualisation
-    d2d = Draw.rdMolDraw2D.MolDraw2DSVG(600, 600, 300, 300)
-    svg_text = draw_mapping(mol1_to_mol2=mapping.componentA_to_componentB, mol1=mapping.componentA.to_rdkit(), mol2=mapping.componentB.to_rdkit(), d2d=d2d)
-    # Keep only the first complete SVG document, without this there is an error displayed with the mapping
-    start = svg_text.find("<svg")
-    end = svg_text.find("</svg>", start)
-    if start == -1 or end == -1:
-        raise ValueError("draw_mapping did not return a valid SVG document.")
-    svg_text = svg_text[start:end + len("</svg>")]
+    if mapping is not None:
+        d2d = Draw.rdMolDraw2D.MolDraw2DSVG(600, 600, 300, 300)
+        svg_text = draw_mapping(mol1_to_mol2=mapping.componentA_to_componentB, mol1=mapping.componentA.to_rdkit(), mol2=mapping.componentB.to_rdkit(), d2d=d2d)
+        # Keep only the first complete SVG document, without this there is an error displayed with the mapping
+        start = svg_text.find("<svg")
+        end = svg_text.find("</svg>", start)
+        if start == -1 or end == -1:
+            raise ValueError("draw_mapping did not return a valid SVG document.")
+        svg_text = svg_text[start:end + len("</svg>")]
 
-    with (output_dir / "mapping.svg").open("w", encoding="utf-8") as out:
-        out.write(svg_text)
-
+        with (output_dir / "mapping.svg").open("w", encoding="utf-8") as out:
+            out.write(svg_text)
 
 
 def cli():
