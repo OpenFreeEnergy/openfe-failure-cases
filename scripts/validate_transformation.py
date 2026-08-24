@@ -295,7 +295,7 @@ def main(transformation_file: str):
         else:
             box_vectors = None
         try:
-            check_for_missing_residues(protein, peptide_bond_cutoff=2.0 * offunit.angstrom, box_vectors=box_vectors)
+            check_for_missing_residues(protein, peptide_bond_cutoff=3.0 * offunit.angstrom, box_vectors=box_vectors)
         except ValueError as e:
             tf_errors.append(f"Missing residues: {e}")
 

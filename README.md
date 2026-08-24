@@ -30,9 +30,11 @@ You can find an example of a failure case submission here: https://github.com/Op
 
 ## Local analysis
 
-We provide [scripts](scripts) for local analysis of failure cases. These scripts are intended for private use and cannot be submitted to this public repository.
+We provide [scripts](scripts) for local analysis of failure cases. These scripts can be helpful to diagnose private failure cases which cannot be submitted to this public repository for analysis by the OpenFE team.
 
-The scripts help validate transformations and check for common issues, such as bond-breaking RBFE mappings or missing protein residues without caps.
+The scripts help validate transformations and check for common issues, such as bond-breaking RBFE mappings or missing protein residues without caps and should help identify possible causes of failure for further investigation.
+
+The scripts are not exhaustive however so if you have a failure case that is not explained by the scripts, please submit it to the repository for further analysis.
 
 ### Running a script
 
