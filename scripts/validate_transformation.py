@@ -318,7 +318,6 @@ def main(transformation_file: str):
             check_minimum_mapping(mapping)
         except ValueError as e:
             tf_errors.append(f"Minimum mapping: {e}")
-    
 
     pb_fails = run_posebusters_validation(transformation)
     for key, errors in pb_fails.items():
@@ -338,7 +337,6 @@ def main(transformation_file: str):
     else:
         print(f"Transformation {transformation.name} passed all validation checks.")
 
-
     # extract the inputs for visualisation
     print(f"SCRIPT OUTPUT SUMMARY GENERATED at: {output_dir}")
     print("  - receptor.pdb: the receptor used as input including waters (if present)")
@@ -353,9 +351,9 @@ def main(transformation_file: str):
     for smc in smcs:
         supplier.write(smc.to_rdkit())
 
-    pc = transformation.stateA.get_components_of_type(ProteinComponent)
-    if pc:
-        pc.to_pdb_file((output_dir / "receptor.pdb").as_posix())
+    pcs = transformation.stateA.get_components_of_type(ProteinComponent)
+    if pcs:
+        pcs[0].to_pdb_file((output_dir / "receptor.pdb").as_posix())
 
     # write out the mapping to svg for visualisation
     if mapping is not None:
