@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.12/site-packages/gufe/protocols/protocolunit.py", line 320, in execute
+    outputs = self._execute(context, **inputs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/openfe/protocols/openmm_rfe/equil_rfe_methods.py", line 1159, in _execute
+    outputs = self.run(scratch_basepath=ctx.scratch,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/openfe/protocols/openmm_rfe/equil_rfe_methods.py", line 1001, in run
+    sampler.setup(
+  File "/opt/conda/lib/python3.12/site-packages/openfe/protocols/openmm_rfe/_rfe_utils/multistate.py", line 121, in setup
+    minimize(compound_thermostate_copy, sampler_state,
+  File "/opt/conda/lib/python3.12/site-packages/openfe/protocols/openmm_rfe/_rfe_utils/multistate.py", line 295, in minimize
+    context, integrator = dummy_cache.get_context(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/openmmtools/cache.py", line 770, in get_context
+    context = thermodynamic_state.create_context(integrator, self.platform)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/openmmtools/states.py", line 1179, in create_context
+    return openmm.Context(system, integrator, platform)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/lib/python3.12/site-packages/openmm/openmm.py", line 19511, in __init__
+    _openmm.Context_swiginit(self, _openmm.new_Context(*args))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+openmm.OpenMMException: NonbondedForce: The cutoff distance cannot be greater than half the periodic box size.  For more information, see https://github.com/openmm/openmm/wiki/Frequently-Asked-Questions#boxsize

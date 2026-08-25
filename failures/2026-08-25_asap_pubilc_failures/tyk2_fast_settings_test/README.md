@@ -1,0 +1,1 @@
+Solvent leg failure due to very low solvent padding (1.0nm) which is less than the OpenFE default of 1.5 nm. This causes the box to be too small in comparison to the nonbonded cutoff. 
