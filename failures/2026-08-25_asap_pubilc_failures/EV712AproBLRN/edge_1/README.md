@@ -1,1 +1,2 @@
 Clashing input structure with the receptor with a hybridization change (from a 2D mapping?) possibly a good case for SepTop.
+Also fails in solvent.
