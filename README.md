@@ -47,7 +47,7 @@ These errors have the same cause: the system is too small for the chosen nonbond
 
 #### Suggested fixes
 - If the system is solvated by the OpenFE protocol, increase the protocol's `solvent_padding` setting.
-- If the system is explicitly solvated, verify that the correct box vectors were supplied.
+- If the system is explicitly solvated, e.g. when using `SolvatedPDBComponent` or `ProteinMembraneComponent`, verify that the correct box vectors were supplied.
 - Ensure there is sufficient solvent around the system.
 
 We do **not** recommend changing the nonbonded cutoff, since force fields are typically parameterized for these values and changing them may affect accuracy.
