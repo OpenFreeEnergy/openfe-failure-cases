@@ -7,6 +7,7 @@ from openff.units import Quantity
 from openmm import unit as omm_unit
 from rdkit import Chem
 import pathlib
+import tempfile
 from rdkit.Chem import Draw
 
 
@@ -34,33 +35,40 @@ def run_posebusters_validation(transformation: Transformation) -> dict[str, list
 
     # get the receptor if we have one
     pcs = transformation.stateA.get_components_of_type(ProteinComponent)
+    receptor = None
+    temp_receptor_path: pathlib.Path | None = None
     if pcs:
         # use the file path input as water clash detection is missed if we use rdkit.
-        pcs[0].to_pdb_file("receptor.pdb")
-        receptor = "receptor.pdb"
+        with tempfile.NamedTemporaryFile(suffix=".pdb", delete=False) as tmp:
+            temp_receptor_path = pathlib.Path(tmp.name)
+        pcs[0].to_pdb_file(temp_receptor_path.as_posix())
+        receptor = temp_receptor_path.as_posix()
         # use the dock as we have no ground truth for the ligands
         buster_method = "dock"
     else:
-        receptor = None
         # if we have no receptor just bust the ligands
         buster_method = "mol"
 
-    buster = PoseBusters(config=buster_method)
+    try:
+        buster = PoseBusters(config=buster_method)
 
-    pb_fails = {}
+        pb_fails = {}
 
-    # get a unique set of smcs across the end states this should work for all protocols
-    smcs = {*transformation.stateA.get_components_of_type(SmallMoleculeComponent),
-            *transformation.stateB.get_components_of_type(SmallMoleculeComponent)}
-    for smc in smcs:
-        df = buster.bust(mol_pred=smc.to_rdkit(), mol_cond=receptor, mol_true=None)
-        pb_fails[smc.name] = []
-        for _, row in df.iterrows():
-            data = row.to_dict()
-            for key, value in data.items():
-                if not value:
-                    pb_fails[smc.name].append(key)
-    return pb_fails
+        # get a unique set of smcs across the end states this should work for all protocols
+        smcs = {*transformation.stateA.get_components_of_type(SmallMoleculeComponent),
+                *transformation.stateB.get_components_of_type(SmallMoleculeComponent)}
+        for smc in smcs:
+            df = buster.bust(mol_pred=smc.to_rdkit(), mol_cond=receptor, mol_true=None)
+            pb_fails[smc.name] = []
+            for _, row in df.iterrows():
+                data = row.to_dict()
+                for key, value in data.items():
+                    if not value:
+                        pb_fails[smc.name].append(key)
+        return pb_fails
+    finally:
+        if temp_receptor_path is not None:
+            temp_receptor_path.unlink(missing_ok=True)
 
 
 def check_for_bond_breaks(mapping: LigandAtomMapping):
@@ -255,7 +263,7 @@ def check_for_missing_residues(protein: ProteinComponent | ProteinMembraneCompon
         )
 
 
-def main(transformation_file: str):
+def main(transformation_file: str, write_local_files: bool = False):
     """
     Validate the provided transformation file for common issues.
 
@@ -266,7 +274,7 @@ def main(transformation_file: str):
     4. Check for minimum number of mapped heavy atoms (at least 4).
     5. Run posebusters external validation if available.
 
-    The results are writen to a local dir with the same name as the input transformation file and include:
+    The results are writen to a local dir when requested with the same name as the input transformation file and include:
     - `receptor.pdb` the receptor used as input including waters
     - `ligands.sdf` the alchemical end state ligand in there input geometries
     - `mapping.png` the atom mapping for the transformation
@@ -276,8 +284,9 @@ def main(transformation_file: str):
     transformation = Transformation.from_json(transformation_file)
     tf_file = pathlib.Path(transformation_file)
 
-    output_dir = pathlib.Path(f"{tf_file.stem}_validation_outputs")
-    output_dir.mkdir(exist_ok=True, parents=True)
+    output_dir = pathlib.Path(f"{tf_file.stem}_validation_outputs") if write_local_files else None
+    if output_dir is not None:
+        output_dir.mkdir(exist_ok=True, parents=True)
 
     # get the protocol type
     print(f"Protocol type: {transformation.protocol.__class__.__name__}\n")
@@ -331,43 +340,47 @@ def main(transformation_file: str):
 
         print(message, end="")
 
-        with (output_dir / "errors.log").open("w") as out:
-            out.write(message)
+        if output_dir is not None:
+            with (output_dir / "errors.log").open("w") as out:
+                out.write(message)
 
     else:
         print(f"Transformation {transformation.name} passed all validation checks.")
 
     # extract the inputs for visualisation
-    print(f"SCRIPT OUTPUT SUMMARY GENERATED at: {output_dir}")
-    print("  - receptor.pdb: the receptor used as input including waters (if present)")
-    print("  - ligands.sdf: the alchemical end state ligand in there input geometries")
-    print("  - mapping.svg: the atom mapping for the transformation")
-    print("  - errors.log: the errors found by the script which are also printed to the terminal.")
+    if output_dir is not None:
+        print(f"SCRIPT OUTPUT SUMMARY GENERATED at: {output_dir}")
+        print("  - receptor.pdb: the receptor used as input including waters (if present)")
+        print("  - ligands.sdf: the alchemical end state ligand in there input geometries")
+        print("  - mapping.svg: the atom mapping for the transformation")
+        print("  - errors.log: the errors found by the script which are also printed to the terminal.")
 
-    smcs = {*transformation.stateA.get_components_of_type(SmallMoleculeComponent),
-            *transformation.stateB.get_components_of_type(SmallMoleculeComponent)}
+        smcs = {*transformation.stateA.get_components_of_type(SmallMoleculeComponent),
+                *transformation.stateB.get_components_of_type(SmallMoleculeComponent)}
 
-    supplier = Chem.SDWriter((output_dir / "ligands.sdf").as_posix())
-    for smc in smcs:
-        supplier.write(smc.to_rdkit())
+        supplier = Chem.SDWriter((output_dir / "ligands.sdf").as_posix())
+        for smc in smcs:
+            supplier.write(smc.to_rdkit())
 
-    pcs = transformation.stateA.get_components_of_type(ProteinComponent)
-    if pcs:
-        pcs[0].to_pdb_file((output_dir / "receptor.pdb").as_posix())
+        pcs = transformation.stateA.get_components_of_type(ProteinComponent)
+        if pcs:
+            pcs[0].to_pdb_file((output_dir / "receptor.pdb").as_posix())
 
-    # write out the mapping to svg for visualisation
-    if mapping is not None:
-        d2d = Draw.rdMolDraw2D.MolDraw2DSVG(600, 600, 300, 300)
-        svg_text = draw_mapping(mol1_to_mol2=mapping.componentA_to_componentB, mol1=mapping.componentA.to_rdkit(), mol2=mapping.componentB.to_rdkit(), d2d=d2d)
-        # Keep only the first complete SVG document, without this there is an error displayed with the mapping
-        start = svg_text.find("<svg")
-        end = svg_text.find("</svg>", start)
-        if start == -1 or end == -1:
-            raise ValueError("draw_mapping did not return a valid SVG document.")
-        svg_text = svg_text[start:end + len("</svg>")]
+        # write out the mapping to svg for visualisation
+        if mapping is not None:
+            d2d = Draw.rdMolDraw2D.MolDraw2DSVG(600, 600, 300, 300)
+            svg_text = draw_mapping(mol1_to_mol2=mapping.componentA_to_componentB, mol1=mapping.componentA.to_rdkit(), mol2=mapping.componentB.to_rdkit(), d2d=d2d)
+            # Keep only the first complete SVG document, without this there is an error displayed with the mapping
+            start = svg_text.find("<svg")
+            end = svg_text.find("</svg>", start)
+            if start == -1 or end == -1:
+                raise ValueError("draw_mapping did not return a valid SVG document.")
+            svg_text = svg_text[start:end + len("</svg>")]
 
-        with (output_dir / "mapping.svg").open("w", encoding="utf-8") as out:
-            out.write(svg_text)
+            with (output_dir / "mapping.svg").open("w", encoding="utf-8") as out:
+                out.write(svg_text)
+    else:
+        print("SCRIPT OUTPUT SUMMARY: enable local file writing with --write-local-files for additional visualisation of the Transformation.")
 
 
 def cli():
@@ -380,8 +393,14 @@ def cli():
         type=str,
         help="Path to the transformation JSON file to validate.",
     )
+    parser.add_argument(
+        "--write-local-files",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Write receptor.pdb, ligands.sdf, mapping.svg, and errors.log locally for visualisation and debugging, by default this is disabled.",
+    )
     args = parser.parse_args()
-    main(args.transformation_file)
+    main(args.transformation_file, write_local_files=args.write_local_files)
 
 
 if __name__ == "__main__":
