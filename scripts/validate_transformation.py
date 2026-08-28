@@ -274,7 +274,7 @@ def main(transformation_file: str, write_local_files: bool = False):
     4. Check for minimum number of mapped heavy atoms (at least 4).
     5. Run posebusters external validation if available.
 
-    The results are writen to a local dir when requested with the same name as the input transformation file and include:
+    The results are writen to a local dir, when requested by the `write_local_files` flag, with the same name as the input transformation file and include:
     - `receptor.pdb` the receptor used as input including waters
     - `ligands.sdf` the alchemical end state ligand in there input geometries
     - `mapping.png` the atom mapping for the transformation
