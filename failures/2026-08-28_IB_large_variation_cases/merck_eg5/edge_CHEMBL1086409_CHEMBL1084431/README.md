@@ -1,8 +1,8 @@
 Industry benchmarking results showed large variation in the complex leg predictions, this could be due to the large 
-alchemical region involving conserved charged groups due to a inconsistent pose prediction. The complex and solvent 
-legs have poor MBAR overlap and replica mixing. 
+alchemical region which includes charged groups with poor spatial overlap of the input positions.
+The complex and solvent legs also have poor MBAR overlap and replica mixing.
 
-Posebusters identified clashes with the receptor for 27e. 
+No validation errors were found.
 
 **Note** 
 The transformation file is not the original transformation file used in the benchmark it uses a different force field and partial charges, but the same atom mapping and input structures. 
