@@ -4,5 +4,17 @@ The complex and solvent legs also have poor MBAR overlap and replica mixing.
 
 No validation errors were found.
 
+Complex DG values (kcal/mol):
+
+- -37.98114907331114
+- -35.05764227596774
+- -42.598415217901234
+
+Complex lowest off-diagonal MBAR overlap:
+
+- 0.0007735522897782
+- 0.0009750914147156
+- 0.0011298754013534
+
 **Note** 
 The transformation file is not the original transformation file used in the benchmark it uses a different force field and partial charges, but the same atom mapping and input structures. 
