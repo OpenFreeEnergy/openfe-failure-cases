@@ -262,6 +262,45 @@ def check_for_missing_residues(protein: ProteinComponent | ProteinMembraneCompon
             + msg
         )
 
+def check_hybridization_changes(mapping: LigandAtomMapping):
+    """
+    Check for hybridization changes involving single to double or triple bonds in the provided mapping as these often
+    lead to instabilities.
+
+    Parameters
+    ----------
+    mapping : LigandAtomMapping
+        The mapping to check
+
+    Raises
+    ------
+    ValueError
+        If any atoms change hybridization and a double or triple bond is involved in the change, which can lead to instabilities.
+    """
+    mol_a = mapping.componentA.to_rdkit()
+    mol_b = mapping.componentB.to_rdkit()
+    atom_map = mapping.componentA_to_componentB
+
+    for atom in mol_a.GetAtoms():
+        atom_idx = atom.GetIdx()
+
+        if atom_idx not in atom_map:
+            continue
+
+        # check if the bond is mapped
+        for bond in atom.GetBonds():
+            other_atom = bond.GetOtherAtom(atom)
+            other_atom_idx = other_atom.GetIdx()
+            if other_atom_idx in atom_map:
+                # find the mapped bond
+                mapped_atom_idx = atom_map[atom_idx]
+                mapped_other_atom_idx = atom_map[other_atom_idx]
+                mapped_bond = mol_b.GetBondBetweenAtoms(mapped_atom_idx, mapped_other_atom_idx)
+                if mapped_bond is not None:
+                    if bond.GetBondType() != mapped_bond.GetBondType():
+                        if (bond.GetBondType() in [Chem.BondType.DOUBLE, Chem.BondType.TRIPLE]) or (mapped_bond.GetBondType() in [Chem.BondType.DOUBLE, Chem.BondType.TRIPLE]):
+                            raise ValueError(f"Hybridization change detected for bond: {atom_idx}->{other_atom_idx}:type:{bond.GetBondType()} which is mapped to {mapped_atom_idx}:{other_atom_idx}:type:{mapped_bond.GetBondType()} which can lead to instabilities.")
+
 
 def main(transformation_file: str, write_local_files: bool = False):
     """
@@ -272,7 +311,8 @@ def main(transformation_file: str, write_local_files: bool = False):
     2. Check for empty atom mappings.
     3. Check for bond breaks in the mapping.
     4. Check for minimum number of mapped heavy atoms (at least 4).
-    5. Run posebusters external validation if available.
+    5. Check for hybridization changes involving single to double or triple bonds in the mapping.
+    6. Run posebusters external validation if available.
 
     The results are writen to a local dir, when requested by the `write_local_files` flag, with the same name as the input transformation file and include:
     - `receptor.pdb` the receptor used as input including waters
@@ -327,6 +367,11 @@ def main(transformation_file: str, write_local_files: bool = False):
             check_minimum_mapping(mapping)
         except ValueError as e:
             tf_errors.append(f"Minimum mapping: {e}")
+
+        try:
+            check_hybridization_changes(mapping)
+        except ValueError as e:
+            tf_errors.append(f"Hybridization changes: {e}")
 
     pb_fails = run_posebusters_validation(transformation)
     for key, errors in pb_fails.items():
