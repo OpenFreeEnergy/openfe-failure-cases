@@ -299,7 +299,7 @@ def check_hybridization_changes(mapping: LigandAtomMapping):
                 if mapped_bond is not None:
                     if bond.GetBondType() != mapped_bond.GetBondType():
                         if (bond.GetBondType() in [Chem.BondType.DOUBLE, Chem.BondType.TRIPLE]) or (mapped_bond.GetBondType() in [Chem.BondType.DOUBLE, Chem.BondType.TRIPLE]):
-                            raise ValueError(f"Hybridization change detected for bond: {atom_idx}->{other_atom_idx}:type:{bond.GetBondType()} which is mapped to {mapped_atom_idx}:{other_atom_idx}:type:{mapped_bond.GetBondType()} which can lead to instabilities.")
+                            raise ValueError(f"Hybridization change detected for bond: {atom_idx}->{other_atom_idx}:type:{bond.GetBondType()} which is mapped to {mapped_atom_idx}:{mapped_other_atom_idx}:type:{mapped_bond.GetBondType()} which can lead to instabilities.")
 
 
 def main(transformation_file: str, write_local_files: bool = False):
