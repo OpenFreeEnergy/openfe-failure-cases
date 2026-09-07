@@ -1,0 +1,1 @@
+Solvent leg NaN for a charge change transformation which works in complex, possibly not enough solvent padding (1.2) which is less that the OpenFE default of 1.5 nm does not hit the box size error however.

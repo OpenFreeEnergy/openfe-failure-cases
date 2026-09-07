@@ -1,0 +1,1 @@
+Complex leg failure due to clashing input pose with the receptor, solvent leg works, a case for better equilibration to try and resolve. 

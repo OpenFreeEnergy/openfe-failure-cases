@@ -1,0 +1,1 @@
+Solvent leg failure (also fails in complex leg) with a `NaN`. Seems to use a 2D mapping with poor ligand alignment, possible case for SepTop or better equilibration.  

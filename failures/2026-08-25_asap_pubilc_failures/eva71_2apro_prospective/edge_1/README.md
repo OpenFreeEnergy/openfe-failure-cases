@@ -1,0 +1,2 @@
+Solvent leg failure despite an okay mapping. Posebusters flags high internal energy of the input poses due to overlapping hydrogen atoms in both end states.
+Also a possible hybridization change, possible that better equilibration of the input poses would help.

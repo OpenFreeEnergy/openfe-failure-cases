@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/multistate/multistatesampler.py", line 1328, in _propagate_replica
+    mcmc_move.apply(thermodynamic_state, sampler_state, context_cache=self.sampler_context_cache)
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/mcmc.py", line 1151, in apply
+    super(LangevinDynamicsMove, self).apply(thermodynamic_state, sampler_state,
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/mcmc.py", line 755, in apply
+    raise IntegratorMoveError(err_msg, self, context)
+openmmtools.mcmc.IntegratorMoveError: Potential energy is NaN after 20 attempts of integration with move LangevinDynamicsMove
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/gufe/protocols/protocolunit.py", line 320, in execute
+    outputs = self._execute(context, **inputs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openfe/protocols/openmm_rfe/equil_rfe_methods.py", line 1159, in _execute
+    outputs = self.run(scratch_basepath=ctx.scratch,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openfe/protocols/openmm_rfe/equil_rfe_methods.py", line 1034, in run
+    sampler.equilibrate(
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/multistate/multistatesampler.py", line 698, in equilibrate
+    self._propagate_replicas()
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/utils/utils.py", line 95, in _wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/multistate/multistatesampler.py", line 1301, in _propagate_replicas
+    propagated_states, replica_ids = mpiplus.distribute(self._propagate_replica, range(self.n_replicas),
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/mpiplus/mpiplus.py", line 523, in distribute
+    all_results = [task(job_args, *other_args, **kwargs) for job_args in distributed_args]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dotsond/miniforge3/envs/alchemiscale.org-compute-ddotson-2024.12.04/lib/python3.12/site-packages/openmmtools/multistate/multistatesampler.py", line 1339, in _propagate_replica
+    raise SimulationNaNError(message)
+openmmtools.multistate.utils.SimulationNaNError: Propagating replica 0 at state 0 resulted in a NaN!
+The state of the system and integrator before the error were saved in /scratch/choderaj/dotsond/16819754-102/shared/ProtocolDAG-bc519bae802577e0d9ed7bd24826fede/shared_RelativeHybridTopologyProtocolUnit-740512778bed4e63a4cf6d0dddfb943d_attempt_0/nan-error-logs
