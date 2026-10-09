@@ -28,10 +28,43 @@ def run_posebusters_validation(transformation: Transformation) -> dict[str, list
     """
     try:
         from posebusters import PoseBusters
-        print("posebusters_avilable: True\n")
+        print("posebusters_available: True\n")
     except ImportError:
-        print("posebusters_avilable: False\n")
+        print("posebusters_available: False\n")
         return {}
+
+    # we run a full report to get the ids of the most extreme clashes if present, but don't want to print all the data
+    # so just print the fields from the short report
+    default_checked_fields  = [
+        'mol_pred_loaded',
+        'sanitization',
+        'inchi_convertible',
+        'all_atoms_connected',
+        'no_radicals',
+        'bond_lengths',
+        'bond_angles',
+        'internal_steric_clash',
+        'aromatic_ring_flatness',
+        'non-aromatic_ring_non-flatness',
+        'double_bond_flatness',
+        'internal_energy',
+        'protein-ligand_maximum_distance',
+        'minimum_distance_to_protein',
+        'minimum_distance_to_organic_cofactors',
+        'minimum_distance_to_inorganic_cofactors',
+        'minimum_distance_to_waters',
+        'volume_overlap_with_protein',
+        'volume_overlap_with_organic_cofactors',
+        'volume_overlap_with_inorganic_cofactors',
+        'volume_overlap_with_waters'
+    ]
+
+    distance_key_to_atom_field = {
+        # get the identifiers of the most extreme clash for the protein/water-ligand distance check
+        #  format of list:               element of the ligand, atom id of the ligand, element of the protein, atom id of the protein, smallest distance
+        "minimum_distance_to_protein": ["most_extreme_ligand_element_protein", "most_extreme_ligand_atom_id_protein", "most_extreme_protein_element_protein", "most_extreme_protein_atom_id_protein", "smallest_distance_protein"],
+        "minimum_distance_to_waters": ["most_extreme_ligand_element_waters", "most_extreme_ligand_atom_id_waters", "most_extreme_protein_element_waters", "most_extreme_protein_atom_id_waters", "smallest_distance_waters"],
+    }
 
     # get the receptor if we have one
     pcs = transformation.stateA.get_components_of_type(ProteinComponent)
@@ -58,13 +91,21 @@ def run_posebusters_validation(transformation: Transformation) -> dict[str, list
         smcs = {*transformation.stateA.get_components_of_type(SmallMoleculeComponent),
                 *transformation.stateB.get_components_of_type(SmallMoleculeComponent)}
         for smc in smcs:
-            df = buster.bust(mol_pred=smc.to_rdkit(), mol_cond=receptor, mol_true=None)
+            df = buster.bust(mol_pred=smc.to_rdkit(), mol_cond=receptor, mol_true=None, full_report=True)
             pb_fails[smc.name] = []
             for _, row in df.iterrows():
                 data = row.to_dict()
-                for key, value in data.items():
+                for key in default_checked_fields:
+                    # in some cases the key is missing (solvent legs don't report the protein-ligand distance check for example) so we default to True if the key is missing
+                    value = data.get(key, True)
                     if not value:
-                        pb_fails[smc.name].append(key)
+                        # If the key is a distance check pull the extreme value from the report and add it to the error message
+                        if key in distance_key_to_atom_field:
+                            atom_fields = distance_key_to_atom_field[key]
+                            lig_ele, lig_id, receptor_ele, receptor_id, distance = [data[field] for field in atom_fields]
+                            pb_fails[smc.name].append(f"{key} (extreme values: ligand atom: {lig_ele} (index {lig_id}), receptor atom: {receptor_ele} (index {receptor_id}), distance {distance:.2f} Å)")
+                        else:
+                            pb_fails[smc.name].append(key)
         return pb_fails
     finally:
         if temp_receptor_path is not None:
@@ -376,7 +417,10 @@ def main(transformation_file: str, write_local_files: bool = False):
     pb_fails = run_posebusters_validation(transformation)
     for key, errors in pb_fails.items():
         if errors:
-            tf_errors.append(f"Posebusters validation failures for {key}: {', '.join(errors)}")
+            tf_errors.append(
+                f"Posebusters validation failures for {key}:\n"
+                + "\n".join(f"    {error}" for error in errors)
+            )
 
     if tf_errors:
         # print the errors to the terminal and write them to a log file
@@ -406,6 +450,7 @@ def main(transformation_file: str, write_local_files: bool = False):
         supplier = Chem.SDWriter((output_dir / "ligands.sdf").as_posix())
         for smc in smcs:
             supplier.write(smc.to_rdkit())
+        supplier.close()
 
         pcs = transformation.stateA.get_components_of_type(ProteinComponent)
         if pcs:
