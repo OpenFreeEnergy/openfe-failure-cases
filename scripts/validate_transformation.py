@@ -103,7 +103,7 @@ def run_posebusters_validation(transformation: Transformation) -> dict[str, list
                         if key in distance_key_to_atom_field:
                             atom_fields = distance_key_to_atom_field[key]
                             lig_ele, lig_id, receptor_ele, receptor_id, distance = [data[field] for field in atom_fields]
-                            pb_fails[smc.name].append(f"{key} (extreme values: ligand: {lig_ele}:{lig_id}, receptor: {receptor_ele}:{receptor_id}, distance: {distance})")
+                            pb_fails[smc.name].append(f"{key} (extreme values: ligand atom: {lig_ele} (index {lig_id}), receptor atom: {receptor_ele} (index {receptor_id}), distance {distance:.2f} Å)")
                         else:
                             pb_fails[smc.name].append(key)
         return pb_fails
